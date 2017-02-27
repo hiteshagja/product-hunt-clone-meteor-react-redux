@@ -1,0 +1,110 @@
+.form-horizontal .control-label {
+  text-align: left !important;
+}
+
+hr {
+  border-top: 1px solid #e5e5e5 !important;
+}
+
+.modal-footer {
+  text-align: left !important;
+}
+
+.slick-prev {
+  margin-left: 1rem;
+}
+
+.slick-prev:before {
+    font-family: "FontAwesome";
+    content: "\f104";
+    color: #777 !important;
+}
+
+.slick-next:before {
+    font-family: "FontAwesome";
+    content: "\f105";
+    color: #777 !important;
+}
+
+
+/*Added by Hitesh*/
+.navbar-default{
+  background-color: #fff;
+  border-radius: 0;
+}
+
+.wrapper{
+  background-color: #f9f9f9;
+}
+
+.category-list{
+  background: #fff;
+  padding: 10px;
+  padding-left:30px;
+  padding-right:30px;
+  box-shadow:none;
+  -webkit-box-shadow:none;
+  border: none;
+  border-top: 1px solid #e3e3e3;
+}
+
+.post-by-day .panel-heading{
+  background-color: #fff;
+}
+
+.single-post-detail,
+.comment-item{
+  background-color: #fff!important;
+}
+.collectionName{
+  background-color:#505d6c;
+  padding:30px;
+}
+.collectionName > p {
+    color:white;
+    font-weight: bold;
+}
+
+
+.user-profile{
+  padding: 60px 60px 86px;
+  background-color: #77aaff;
+  color:white;
+}
+.profilePicture{
+  float: left;
+  padding-right: 20px
+}
+
+.left-side{
+  padding:5px;
+}
+.left-side p a {
+  text-decoration:none;
+  color:gray;
+  padding: 5px;
+  cursor: pointer;
+}
+.Active{
+  color: black !important;
+  background-color: #e3e3e3;
+}
+
+.collectionDiv{
+  height:180px;
+  background-color: lightblue;
+  padding: 5px;
+  text-decoration:none;
+  color:black;
+  cursor: pointer;
+}
+
+.collectionDiv p{
+  top: 47%;
+  position: absolute;
+  left: 37%;
+}
+
+.centerDiv{
+  background-color: white;
+}

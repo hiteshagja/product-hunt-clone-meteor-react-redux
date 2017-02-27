@@ -1,0 +1,29 @@
+export const SIGNIN_TOGGLE = 'SIGNIN_TOGGLE';
+export const SIGNIN_FACEBOOK = 'SIGNIN_FACEBOOK';
+export const SIGNIN_TWITTER = 'SIGNIN_TWITTER';
+export const SIGNOUT = 'SIGNOUT';
+
+export const POST_TOGGLE = 'POST_TOGGLE';
+export const POSTS_GET = 'POSTS_GET';
+export const POSTS_GET_ALL = 'POSTS_GET_ALL';
+export const POSTS_ADD = 'POSTS_ADD';
+export const POSTS_UPDATE = 'POSTS_UPDATE';
+
+export const CATEGORY_TOGGLE = 'CATEGORY_TOGGLE';
+export const CATEGORY_GET = 'CATEGORY_GET';
+export const CATEGORY_GET_ALL = 'CATEGORY_GET_ALL';
+export const CATEGORY_ADD = 'CATEGORY_ADD';
+export const CATEGORY_UPDATE = 'CATEGORY_UPDATE';
+
+export const COMMENT_ADD = 'COMMENT_ADD';
+export const COMMENT_UPDATE = 'COMMENT_UPDATE';
+export const COMMENTS_OF_POST = 'COMMENTS_OF_POST';
+
+
+export const LIST_TOGGLE = 'LIST_TOGGLE';
+export const LIST_DATA = 'LIST_DATA';
+export const SINGLE_LIST_DATA = 'SINGLE_LIST_DATA';
+
+export const VOTE_COUNT = 'VOTE_COUNT';
+
+export const COLLECTION_NAME = 'COLLECTION_NAME';
