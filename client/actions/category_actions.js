@@ -12,26 +12,18 @@ export function toggleCategoryModal(value) {
   }
 }
 
-export function addCategory(data) {
+export function addCategory(data, cb) {
   return (dispatch, getState) => {
     Meteor.call('addCategory', data, function(err, res) {
-      dispatch({
-        type: types.CATEGORY_ADD,
-        categoryId: res
-      })
+      cb(err, res);
     })
   }
 }
 
-export function updateCategory(data) {
+export function updateCategory(data, cb) {
   return (dispatch, getState) => {
     Meteor.call('updateCategory', data, function(err, res) {
-      console.log('-------------------------------');
-      console.log(res);
-      dispatch({
-        type: types.CATEGORY_UPDATE,
-        category_update: res
-      })
+      cb(err, res);
     })
   }
 }

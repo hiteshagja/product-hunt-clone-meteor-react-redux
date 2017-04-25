@@ -9,7 +9,6 @@ import {bindActionCreators} from 'redux';
 class MainApp extends Component {
     componentWillMount() {
         this.props.getAllCategory();
-        this.props.getAllPost();
     }
 
     render() {

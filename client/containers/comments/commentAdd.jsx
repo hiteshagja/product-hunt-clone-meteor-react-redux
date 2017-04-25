@@ -19,14 +19,22 @@ class CommentAdd extends Component {
 
   addComment(e) {
     e.preventDefault();
+    self = this;
     let commentObj = {
       body: ReactDOM.findDOMNode(this.refs.txtComment).value,
       postId: this.props.post._id
     }
 
-    this.props.addComment(commentObj);
-    this.props.getPostComments(this.props.post._id);
-    ReactDOM.findDOMNode(this.refs.txtComment).value = '';
+    this.props.addComment(commentObj, function (err, res) {
+      if (err) {
+        bertError(err.message)
+      }
+      else {
+        ReactDOM.findDOMNode(self.refs.txtComment).value = '';
+        self.props.getPostComments(self.props.post._id);
+        self.props.getPost(self.props.post._id);
+      }
+    });
   }
 
     render() {
@@ -40,7 +48,7 @@ class CommentAdd extends Component {
                 <Row>
                     <Col md={12}>
                         <FormGroup controlId="formControlsTextarea">
-                            <FormControl ref="txtComment" componentClass="textarea" placeholder="textarea"/>
+                            <FormControl ref="txtComment" componentClass="textarea" placeholder="Write comment"/>
                         </FormGroup>
                     </Col>
                 </Row>

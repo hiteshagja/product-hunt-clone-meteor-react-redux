@@ -5,15 +5,14 @@ export const SIGNOUT = 'SIGNOUT';
 
 export const POST_TOGGLE = 'POST_TOGGLE';
 export const POSTS_GET = 'POSTS_GET';
+export const POSTS_GET_USER = 'POSTS_GET_USER';
 export const POSTS_GET_ALL = 'POSTS_GET_ALL';
-export const POSTS_ADD = 'POSTS_ADD';
-export const POSTS_UPDATE = 'POSTS_UPDATE';
+export const POST_LOADING = 'POST_LOADING';
+export const POST_PAGING_DETAIL = 'POST_PAGING_DETAIL';
 
 export const CATEGORY_TOGGLE = 'CATEGORY_TOGGLE';
 export const CATEGORY_GET = 'CATEGORY_GET';
 export const CATEGORY_GET_ALL = 'CATEGORY_GET_ALL';
-export const CATEGORY_ADD = 'CATEGORY_ADD';
-export const CATEGORY_UPDATE = 'CATEGORY_UPDATE';
 
 export const COMMENT_ADD = 'COMMENT_ADD';
 export const COMMENT_UPDATE = 'COMMENT_UPDATE';
@@ -27,3 +26,11 @@ export const SINGLE_LIST_DATA = 'SINGLE_LIST_DATA';
 export const VOTE_COUNT = 'VOTE_COUNT';
 
 export const COLLECTION_NAME = 'COLLECTION_NAME';
+
+export const ERROR = 'ERROR';
+
+export const CURRENT_USER = 'CURRENT_USER';
+export const USER_PROFILE = 'USER_PROFILE';
+
+export const ADMIN_COLLECTION_TOGGLE = 'ADMIN_COLLECTION_TOGGLE';
+export const ADMIN_COLLECTION_GET = 'ADMIN_COLLECTION_GET';

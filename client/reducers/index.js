@@ -5,6 +5,9 @@ import * as categoryReducer from './category_reducers';
 import * as commentReducer from './comment_reducers';
 import * as listAction from './list_reducer';
 import * as voteReducer from './vote_reducers';
+import * as userReducer from './user_reducers';
+import * as adminCollectionReducer from './adminCollection_reducers';
+import * as errorReducer from './error';
 
 
 export default combineReducers(Object.assign(
@@ -13,5 +16,8 @@ export default combineReducers(Object.assign(
   categoryReducer,
   commentReducer,
   listAction,
-  voteReducer
+  voteReducer,
+  userReducer,
+  adminCollectionReducer,
+  errorReducer
 ));

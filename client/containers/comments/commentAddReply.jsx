@@ -5,7 +5,7 @@ import {ActionCreators} from '../../actions';
 import {bindActionCreators} from 'redux';
 import {Row, Col, FormControl, FormGroup, Button} from 'react-bootstrap';
 
-class CommentReply extends Component {
+class CommentAddReply extends Component {
     constructor() {
         super();
         this.addComment = this.addComment.bind(this);
@@ -13,16 +13,24 @@ class CommentReply extends Component {
 
     addComment(e) {
         e.preventDefault();
+        self = this;
         let commentObj = {
             body: ReactDOM.findDOMNode(this.refs.txtComment).value,
             postId: this.props.commentData.postId,
             parentCommentId: this.props.commentData._id
         }
 
-        this.props.addComment(commentObj);
-        this.props.getPostComments(this.props.commentData.postId);
-        ReactDOM.findDOMNode(this.refs.txtComment).value = '';
-        this.props.closeBlock();
+        this.props.addComment(commentObj, function (err, res) {
+          if (err) {
+            bertError(err.message)
+          }
+          else {
+            ReactDOM.findDOMNode(self.refs.txtComment).value = '';
+            self.props.closeBlock();
+            self.props.getPostComments(self.props.commentData.postId);
+            self.props.getPost(self.props.commentData.postId);
+          }
+        });
     }
 
     render() {
@@ -32,7 +40,7 @@ class CommentReply extends Component {
                     <Row>
                         <Col md={12}>
                             <FormGroup controlId="formControlsTextarea">
-                                <FormControl ref="txtComment" componentClass="textarea" placeholder="textarea"/>
+                                <FormControl ref="txtComment" componentClass="textarea" placeholder="Write reply"/>
                             </FormGroup>
                         </Col>
                     </Row>
@@ -48,7 +56,7 @@ class CommentReply extends Component {
     }
 }
 
-CommentReply.propTypes = {
+CommentAddReply.propTypes = {
   commentData: PropTypes.object,
   closeBlock: PropTypes.func
 }
@@ -61,4 +69,4 @@ function mapDispatchToProps(dispatch) {
     return bindActionCreators(ActionCreators, dispatch);
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(CommentReply);
+export default connect(mapStateToProps, mapDispatchToProps)(CommentAddReply);

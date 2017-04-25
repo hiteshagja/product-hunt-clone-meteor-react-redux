@@ -5,6 +5,7 @@ import {bindActionCreators} from 'redux'
 import ReactDOM from 'react-dom';
 import CategoryCheckbox from '../categories/categoryCheckbox';
 import PostAdminSection from './postAdminSection';
+import {Images} from '../../../lib/collections/images';
 
 import {
     Button,
@@ -18,6 +19,11 @@ import {
     Checkbox
 } from 'react-bootstrap';
 
+function isUrl(url) {
+    var regexp = /https?:\/\/(?:www\.|(?!www))[^\s\.]+\.[^\s]{2,}|\[^\s]+\.[^\s]{2,}/
+    return regexp.test(url);
+}
+
 class PostAdd extends Component {
     constructor() {
         super();
@@ -25,20 +31,41 @@ class PostAdd extends Component {
             title: '',
             description: '',
             image: '',
-            showImageUrlTextbox: false
+            showImageUrlTextbox: false,
+            images: [],
+            tempImageUrl: [],
+            isDisable: false
         }
         this.fetchDataFromUrl = this.fetchDataFromUrl.bind(this);
         this.removeImage = this.removeImage.bind(this);
         this.showTextbox = this.showTextbox.bind(this);
         this.closeModal = this.closeModal.bind(this);
+        this.handleFileChange = this.handleFileChange.bind(this);
+        this.handleblur = this.handleblur.bind(this);
     }
 
     fetchDataFromUrl() {
         const self = this;
-        let urlData = Embedly.embed(ReactDOM.findDOMNode(this.refs.txtUrl).value);
-        setTimeout(function() {
-            self.setState({title: urlData.title, description: urlData.description, image: urlData.thumbnail_url})
-        }, 100);
+        let url = ReactDOM.findDOMNode(this.refs.txtUrl).value;
+        if (isUrl(url)) {
+            let urlData = Embedly.embed(ReactDOM.findDOMNode(this.refs.txtUrl).value);
+            if (urlData) {
+                setTimeout(function() {
+                    ReactDOM.findDOMNode(self.refs.txtTitle).value = urlData.title
+                        ? urlData.title
+                        : '';
+                    ReactDOM.findDOMNode(self.refs.txtDescription).value = urlData.description
+                        ? urlData.description
+                        : '';
+                    self.setState({title: urlData.title, description: urlData.description, image: urlData.thumbnail_url})
+                }, 100);
+            } else {
+                bertError('Please Check your Url');
+            }
+        } else {
+            bertError('Please enter valid Url');
+            ReactDOM.findDOMNode(this.refs.txtUrl).value = "";
+        }
     }
     addPost(e) {
         e.preventDefault();
@@ -51,7 +78,8 @@ class PostAdd extends Component {
             url: ReactDOM.findDOMNode(this.refs.txtUrl).value,
             title: ReactDOM.findDOMNode(this.refs.txtTitle).value,
             body: ReactDOM.findDOMNode(this.refs.txtDescription).value,
-            imageUrl: ReactDOM.findDOMNode(this.refs.imgUrl).src,
+            imageUrl: this.state.image,
+            images: this.state.images,
             categoryId: selectedCategory,
             status: Constant.STATUS.PENDING
         }
@@ -60,15 +88,38 @@ class PostAdd extends Component {
             objPostData['status'] = $('#formControlsSelect').val();
         }
 
-        this.props.addPost(objPostData);
-        this.props.togglePostModal(false);
-        this.state = {
-            title: '',
-            description: '',
-            image: '',
-            showImageUrlTextbox: false
+        this.props.addPost(objPostData, (err, res) => {
+            if (err) {
+                bertError(err.message);
+            } else {
+                bertSuccess(Constant.MESSAGES.POST.ADD);
+                this.props.togglePostModal(false);
+                this.state = {
+                    title: '',
+                    description: '',
+                    image: '',
+                    showImageUrlTextbox: false,
+                    images: [],
+                    tempImageUrl: []
+                }
+                // console.log(this.postDetail);
+                let today;
+                today = moment(new Date(), 'YYYY-MM-DD').toDate();
+                // var self = this;
+                // setTimeout(function() {
+                //     self.props.getAllPost(self.props.postDetail);
+                // }, 500);
+            }
+        });
+    }
+
+    handleblur(e) {
+        imageUrl = e.target.value;
+        if (isUrl(imageUrl)) {
+            this.setState({image: imageUrl});
+        } else {
+            bertError('Please enter valid Url');
         }
-        this.props.getAllPost();
     }
 
     removeImage(e) {
@@ -82,21 +133,57 @@ class PostAdd extends Component {
     }
 
     closeModal(e) {
-        e.preventDefault();
         this.state = {
             title: '',
             description: '',
             image: '',
-            showImageUrlTextbox: false
+            showImageUrlTextbox: false,
+            images: [],
+            tempImageUrl: []
         }
         this.props.togglePostModal(false);
     }
 
+    handleFileChange(e) {
+        e.preventDefault();
+        this.setState({isDisable: true});
+        self = this;
+        // this.setState({image: '/images/loading.gif'});
+        let fileObj = e.target.files[0];
+        let imageId = this.state.images;
+        var tempImage = this.state.tempImageUrl;
+        Images.insert(fileObj, (err, res) => {
+            if (err) {
+                self.setState({isDisable: false});
+                bertError(err.message)
+            } else {
+                path = 'http://' + window.location.host + res.url({brokenIsFine: true});
+                imageId.push(res._id);
+                self.setState({images: imageId});
+                setTimeout(function() {
+                    tempImage.push(path);
+                    self.setState({isDisable: false});
+                }, 1000);
+
+                // setTimeout(function () {
+                //   self.setState({tempImageUrl:tempImageUrl})
+                // },2000);
+                // self.setState({isDisable:false});
+            }
+        })
+        setTimeout(function() {
+            self.setState({tempImageUrl: tempImage})
+        }, 2000);
+    }
+
     render() {
+        // console.log(this.state);
         let image,
             showTextbox,
             status,
-            categories;
+            categories,
+            images,
+            imageLoading;
         if (this.state.image) {
             image = (
                 <div>
@@ -108,11 +195,21 @@ class PostAdd extends Component {
         }
 
         if (this.state.showImageUrlTextbox) {
-            showTextbox = <FormControl type="text" ref="txtImageUrl"/>;
+            showTextbox = <FormControl type="text" onBlur={this.handleblur} ref="txtImageUrl"/>;
         }
 
         if (Roles.userIsInRole(Meteor.userId(), Constant.ROLES.ADMIN, Constant.ROLES.GROUP)) {
             status = (<PostAdminSection post={{}}/>)
+        }
+
+        if (this.state.tempImageUrl != null) {
+            images = this.state.tempImageUrl.map((data, index) => (<Image width={100} height={100} key={index} src={data} thumbnail/>));
+        }
+
+        if (this.state.isDisable) {
+            imageLoading = <Image width={100} height={100} src="/images/loading.gif" thumbnail/>;
+        } else {
+            imageLoading = "";
         }
 
         return (
@@ -135,7 +232,7 @@ class PostAdd extends Component {
                                 Title
                             </Col>
                             <Col sm={9}>
-                                <FormControl type="text" ref="txtTitle" value={this.state.title}/>
+                                <FormControl type="text" ref="txtTitle"/>
                             </Col>
                         </FormGroup>
                         <FormGroup controlId="formHorizontalBody">
@@ -143,7 +240,7 @@ class PostAdd extends Component {
                                 Body
                             </Col>
                             <Col sm={9}>
-                                <FormControl type="text" ref="txtDescription" componentClass="textarea" value={this.state.description}/>
+                                <FormControl type="text" ref="txtDescription" componentClass="textarea"/>
                             </Col>
                         </FormGroup>
                         <FormGroup controlId="formHorizontalCategory">
@@ -164,11 +261,21 @@ class PostAdd extends Component {
                                 {showTextbox}
                             </Col>
                         </FormGroup>
+                        <FormGroup controlId="formHorizontalImage">
+                            <Col componentClass={ControlLabel} sm={3}>
+                                Post Images
+                            </Col>
+                            <Col sm={9}>
+                                {images}
+                                {imageLoading}
+                                <FormControl type="file" ref="fileImage" onChange={this.handleFileChange}/>
+                            </Col>
+                        </FormGroup>
 
                         {status}
                         <FormGroup controlId="formHorizontalSubmit">
                             <Col componentClass={ControlLabel} sm={12}>
-                                <Button bsStyle="primary" onClick={this.addPost.bind(this)}>Save</Button>
+                                <Button disabled={this.state.isDisable} bsStyle="primary" onClick={this.addPost.bind(this)}>Save</Button>
                             </Col>
                         </FormGroup>
                     </Form>
@@ -183,7 +290,7 @@ PostAdd.propTypes = {
 };
 
 function mapStateToProps(state) {
-    return {postId: state.postReducer.post_add, showPostModal: state.postReducer.post_toggle, categories: state.categoryReducer.category_getAll}
+    return {showPostModal: state.postReducer.post_toggle, categories: state.categoryReducer.category_getAll, postDetail: state.postReducer.postDateDetail}
 }
 
 function mapDispatchToProps(dispatch) {

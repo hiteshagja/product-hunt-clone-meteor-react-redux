@@ -12,7 +12,7 @@ export function toggleSignInModal(value) {
   }
 }
 
-export function signInWithFacebook() {
+export function signInWithFacebook(cb) {
   return (dispatch, getState) => {
     Meteor.loginWithFacebook(function (err, res) {
       Meteor.call('assignRoleToUser', function () {
@@ -23,12 +23,13 @@ export function signInWithFacebook() {
           role: Meteor.user().roles['default-group'][0],
           error: err
         })
+        cb(err, res)
       })
     })
   }
 }
 
-export function signInWithTwitter() {
+export function signInWithTwitter(cb) {
   return (dispatch, getState) => {
     Meteor.loginWithTwitter(function (err, res) {
       Meteor.call('assignRoleToUser', function () {
@@ -39,12 +40,13 @@ export function signInWithTwitter() {
           role: Meteor.user().roles['default-group'][0],
           error: err
         })
+        cb(err, res)
       })
     })
   }
 }
 
-export function signOut() {
+export function signOut(cb) {
   return (dispatch, getState) => {
     Meteor.logout(function (err, res) {
       dispatch({
@@ -52,6 +54,7 @@ export function signOut() {
         signOut: 'SUCCESS',
         userId: null
       })
+      cb(err, res)
     })
   }
 }

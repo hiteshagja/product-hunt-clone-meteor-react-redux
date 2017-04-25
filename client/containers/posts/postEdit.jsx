@@ -29,7 +29,9 @@ class PostEdit extends Component {
         this.removeImage = this.removeImage.bind(this);
         this.showTextbox = this.showTextbox.bind(this);
         this.deletePost = this.deletePost.bind(this);
+        this.handleblur = this.handleblur.bind(this);
     }
+
 
     editPost(e) {
         e.preventDefault();
@@ -45,15 +47,26 @@ class PostEdit extends Component {
             url: ReactDOM.findDOMNode(this.refs.txtUrl).value,
             title: ReactDOM.findDOMNode(this.refs.txtTitle).value,
             body: ReactDOM.findDOMNode(this.refs.txtDescription).value,
-            imageUrl: ReactDOM.findDOMNode(this.refs.imgUrl).src,
+            imageUrl: this.state.image,
             categoryId: selectedCategory
         }
 
         if (Roles.userIsInRole(Meteor.userId(), Constant.ROLES.ADMIN, Constant.ROLES.GROUP)) {
             objPostData['status'] = $('#formControlsSelect').val();
         }
-        this.props.editPost(objPostData);
-        this.props.closeModal();
+        this.props.editPost(objPostData, (err, res) => {
+            if (err) {
+                bertError(err.message);
+            } else {
+                bertSuccess(Constant.MESSAGES.POST.UPDATE)
+                this.props.closeModal();
+            }
+        });
+    }
+
+    handleblur(e){
+      imageUrl = e.target.value;
+      this.setState({image:imageUrl});
     }
 
     removeImage(e) {
@@ -68,8 +81,11 @@ class PostEdit extends Component {
 
     deletePost(e) {
         e.preventDefault();
-        this.props.editPost({postId: this.props.post._id, isDeleted: true});
+        this.props.editPost({postId: this.props.post._id, isDeleted: true},function (err,res) {
+
+        });
         this.props.closeModal();
+        $('.'+this.props.post._id).remove();
     }
 
     render() {
@@ -89,11 +105,11 @@ class PostEdit extends Component {
         }
 
         if (this.state.showImageUrlTextbox) {
-            showTextbox = <FormControl type="text" ref="txtImageUrl"/>;
+          showTextbox = <FormControl type="text" onBlur={this.handleblur} ref="txtImageUrl"/>;
         }
 
         if (Roles.userIsInRole(Meteor.userId(), Constant.ROLES.ADMIN, Constant.ROLES.GROUP)) {
-            status = (<PostAdminSection post={post} />)
+            status = (<PostAdminSection post={post}/>)
         }
 
         return (
@@ -149,7 +165,7 @@ class PostEdit extends Component {
                         {status}
                         <FormGroup controlId="formHorizontalSubmit">
                             <Col componentClass={ControlLabel} sm={12}>
-                                <Button bsStyle="primary" onClick={this.editPost}>Submit</Button>
+                                <Button  bsStyle="primary" onClick={this.editPost}>Submit</Button>
                             </Col>
                         </FormGroup>
                     </Form>
@@ -171,7 +187,7 @@ PostEdit.propTypes = {
 };
 
 function mapStateToProps(state) {
-    return {post_update: state.postReducer.post_update, categories: state.categoryReducer.category_getAll}
+    return {categories: state.categoryReducer.category_getAll}
 }
 
 function mapDispatchToProps(dispatch) {

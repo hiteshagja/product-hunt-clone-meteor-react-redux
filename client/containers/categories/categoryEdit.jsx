@@ -17,13 +17,28 @@ import {
 class CategoryEdit extends Component {
     constructor(props) {
         super(props);
-        this.state = {
-            parentId: props.parentCategory._id
-        }
+        // console.log(props.parentCategory._id);
+        // if (props.parentCategory) {
+        //   this.state = {
+        //     parentId: props.parentCategory._id
+        //   }
+        // }
+        // else {
+        //   this.state = {
+        //     parentId: ''
+        //   }
+        // }
         this.updateCategory = this.updateCategory.bind(this);
     }
 
+    // componentWillMount() {
+    //   if (this.props.category.parentId) {
+    //     this.props.getCategory(this.props.category.parentId);
+    //   }
+    // }
+
     updateCategory(e) {
+      self = this;
         e.preventDefault();
         const objCategory = {
             categoryId: this.props.category._id,
@@ -34,8 +49,15 @@ class CategoryEdit extends Component {
             image: ReactDOM.findDOMNode(this.refs.txtImage).value,
             parentId: ReactDOM.findDOMNode(this.refs.drpCategory).value
         }
-        this.props.updateCategory(objCategory);
-        this.props.closeModal();
+
+        this.props.updateCategory(objCategory, (err, res) => {
+          if (err) {
+              bertError(err.message);
+          } else {
+              bertSuccess(Constant.MESSAGES.CATEGORY.UPDATE)
+              self.props.closeModal();
+          }
+        });
     }
 
     render() {
@@ -91,7 +113,7 @@ class CategoryEdit extends Component {
                                 Parent ID
                             </Col>
                             <Col sm={9}>
-                                <FormControl ref="drpCategory" componentClass="select" defaultValue="LMfTFKJpX3W87p389">
+                                <FormControl ref="drpCategory" componentClass="select" defaultValue={this.props.category.parentId}>
                                     <option key={-1} value="">select category</option>
                                     {this.props.categories.map((category, index) => (
                                         <option key={index} value={category._id}>{category.name}</option>
@@ -118,7 +140,7 @@ CategoryEdit.propTypes = {
 };
 
 function mapStateToProps(state) {
-    return {category_update: state.categoryReducer.category_update, categories: state.categoryReducer.category_getAll}
+    return {categories: state.categoryReducer.category_getAll, parentCategory: state.categoryReducer.category_get}
 }
 
 function mapDispatchToProps(dispatch) {

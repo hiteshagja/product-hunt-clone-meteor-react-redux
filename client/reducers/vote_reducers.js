@@ -3,12 +3,14 @@ import * as types from '../actions/types'
 
 let initialVoteState = {
   vote_count: 0,
+  sourceId: ''
 }
 
 export const voteReducer = createReducer(initialVoteState, {
   [types.VOTE_COUNT](state,action) {
     return Object.assign({}, state, {
-      vote_count: action.vote_count
+      vote_count: action.vote_count,
+      sourceId: action.sourceId
     })
   }
 })

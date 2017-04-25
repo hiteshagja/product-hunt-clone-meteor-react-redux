@@ -1,13 +1,10 @@
 import * as types from './types'
 import {Meteor} from 'meteor/meteor';
 
-export function addComment(data) {
+export function addComment(data, cb) {
   return (dispatch, getState) => {
     Meteor.call('addComment', data, function(err, res) {
-      dispatch({
-        type: types.COMMENT_ADD,
-        commentId: res
-      })
+      cb(err, res)
     })
   }
 }
@@ -30,6 +27,14 @@ export function getPostComments(postId) {
         type: types.COMMENTS_OF_POST,
         post_comments: res
       })
+    })
+  }
+}
+
+export function getCommentCount(postId, cb) {
+  return (dispatch, getState) => {
+    Meteor.call('getCommentCount', postId, function(err, res) {
+      cb(res)
     })
   }
 }

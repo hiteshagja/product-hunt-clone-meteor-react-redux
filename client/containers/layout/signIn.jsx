@@ -23,14 +23,26 @@ class SignIn extends Component {
 
     signInWithFacebook(e) {
         e.preventDefault();
-        this.props.signInWithFacebook();
-        this.props.toggleSignInModal(false);
+        self = this;
+        this.props.signInWithFacebook(() => {
+            self.props.toggleSignInModal(false);
+            self.props.getCurrentUser();
+            self.props.getAdminCollections();
+            this.props.PostPagingDetail({shortAs: 'Popularity', pageNumber: 1, action: 'rebind'});
+            self.props.getAllPost({shortAs: 'Popularity', pageNumber: 1, action: 'rebind'});
+        });
     }
 
     signInWithTwitter(e) {
         e.preventDefault();
-        this.props.signInWithTwitter();
-        this.props.toggleSignInModal(false);
+        self = this;
+        this.props.signInWithTwitter(() => {
+            self.props.toggleSignInModal(false);
+            self.props.getCurrentUser();
+            self.props.getAdminCollections();
+            this.props.PostPagingDetail({shortAs: 'Popularity', pageNumber: 1, action: 'rebind'});
+            self.props.getAllPost({shortAs: 'Popularity', pageNumber: 1, action: 'rebind'});
+        });
     }
 
     render() {

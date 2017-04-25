@@ -21,7 +21,9 @@ class CategoryItem extends Component {
     openModal(e) {
         e.preventDefault();
         this.props.getAllCategory();
-        this.props.getCategory(this.props.category.parentId);
+        if (this.props.category.parentId) {
+            this.props.getCategory(this.props.category.parentId);
+        }
         this.setState({show: true});
     }
 
@@ -31,21 +33,13 @@ class CategoryItem extends Component {
 
     render() {
         const category = this.props.category;
-
-        if (Object.keys(this.props.parentCategory).length > 0) {
-            return (
-                <MenuItem value={category._id}>
-                    {category.name}
-                    <Glyphicon glyph="align-right" value={category._id} onClick={this.openModal}/>
-                    <CategoryEdit showModal={this.state.show} category={category} parentCategory={this.props.parentCategory} closeModal={this.closeModal}/>
-                </MenuItem>
-            )
+        if (this.state.show) {
+            return (<CategoryEdit showModal={this.state.show} category={category} closeModal={this.closeModal}/>)
         } else {
             return (
                 <MenuItem value={category._id}>
                     {category.name}
-                    <Glyphicon glyph="align-right" value={category._id} onClick={this.openModal}/>
-
+                    <i className="fa fa-pencil pull-right" value={category._id} onClick={this.openModal}></i>
                 </MenuItem>
             )
         }
@@ -57,7 +51,7 @@ CategoryItem.propTypes = {
 };
 
 function mapStateToProps(state) {
-    return {parentCategory: state.categoryReducer.category_get}
+    return {}
 }
 
 function mapDispatchToProps(dispatch) {

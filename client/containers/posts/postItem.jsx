@@ -1,27 +1,29 @@
 import React, {PropTypes, Component} from 'react';
-import { Link } from 'react-router';
+import {Link} from 'react-router';
 import {Media, Label, Button} from 'react-bootstrap';
-import PostEdit from '../../containers/posts/postEdit';
 import {connect} from 'react-redux'
 import {ActionCreators} from '../../actions'
 import {bindActionCreators} from 'redux'
-import {browserHistory} from 'react-router';
+import PostEdit from '../../containers/posts/postEdit';
 import ListModel from '../listCollection/listModel';
+import {browserHistory} from 'react-router';
+
 
 class PostItem extends Component {
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
         this.state = {
             show: false,
-            listShow:false,
+            listShow: false,
+            votes:props.post.votes,
         }
         this.openModal = this.openModal.bind(this);
         this.closeModal = this.closeModal.bind(this);
         this.trimDescription = this.trimDescription.bind(this);
         this.handleSave = this.handleSave.bind(this);
         this.closeListModal = this.closeListModal.bind(this);
-        this.handleVote = this.handleVote.bind(this);
-        // this.handleClick = this.handleClick.bind(this);
+        this.handleVoteClick = this.handleVoteClick.bind(this);
+        this.handleCommentClick = this.handleCommentClick.bind(this);
     }
 
     openModal(e) {
@@ -29,81 +31,121 @@ class PostItem extends Component {
         this.setState({show: true});
         this.props.getAllCategory();
     }
-    handleSave(){
-      this.props.getList(Meteor.userId());
-      this.setState({listShow: true});
+    handleSave() {
+        if (Meteor.userId()) {
+            this.props.getList(Meteor.user().slug);
+            this.setState({listShow: true});
+        } else {
+            this.props.toggleSignInModal(true);
+        }
     }
     closeModal() {
         this.setState({show: false});
     }
-    closeListModal(){
-      this.setState({listShow: false});
+    closeListModal() {
+        this.setState({listShow: false});
     }
 
     trimDescription() {
-      console.log(this.props.post.body.substring(0, 100));
-      return this.props.post.body.substring(0, 100);
+        return this.props.post.body.substring(0, 100);
     }
 
-    handleVote(e) {
-      e.preventDefault();
-      this.props.vote(this.props.post._id);
+    handleVoteClick(e) {
+        e.preventDefault();
+        self = this;
+        if (Meteor.userId()) {
+            this.props.vote(this.props.post._id, function() {
+                self.props.getVoteCount(self.props.post._id,function (data) {
+                  self.setState({votes:data});
+                  if(self.props.rebind){
+                    self.props.rebind(self.props.shortAs);
+                  }
+                });
+            });
+        } else {
+            this.props.toggleSignInModal(true);
+        }
     }
-    // handleClick(e) {
-    //   e.preventDefault()
-    //   this.props.getPost(this.props.post._id);
-    //   browserHistory.push('/post/' + this.props.post.slug);
-    // }
+
+    handleCommentClick(e) {
+        e.preventDefault();
+        browserHistory.push('/posts/' + this.props.post._id + '/' + this.props.post.slug);
+    }
 
     render() {
-        let image,
-            status,
-            editLink, url = '/posts/' + this.props.post._id + '/' + this.props.post.slug,
-            description = this.props.post.body ? this.props.post.body.substring(0, 200) : '';
-        if (Meteor.userId() === this.props.post.userId || Roles.userIsInRole(Meteor.userId(), Constant.ROLES.ADMIN, Constant.ROLES.GROUP)) {
-            editLink = (
-                <Button bsSize="xs" onClick={this.openModal}>
-                    <i className="fa fa-pencil" aria-hidden="true"></i>&nbsp;</Button>
+        const {post} = this.props
+        if (Object.keys(post).length > 0) {
+            let image,
+                status,
+                voteButton,
+                commentCount,
+                editLink,
+                url = '/posts/' + post._id + '/' + post.slug,
+                description = post.body
+                    ? post.body.substring(0, 200)
+                    : '';
+            if (Meteor.userId() === post.userId || Roles.userIsInRole(Meteor.userId(), Constant.ROLES.ADMIN, Constant.ROLES.GROUP)) {
+                editLink = (
+                    <Button bsSize="xs" onClick={this.openModal}>
+                        <i className="fa fa-pencil" aria-hidden="true"></i>&nbsp;</Button>
+                )
+            }
+
+            voteButton = (
+                <Button bsSize="xs" onClick={this.handleVoteClick}>
+                    <i className="fa fa-arrow-up" aria-hidden="true"></i>&nbsp;{post.votes}</Button>
+            )
+
+            commentCount = (
+                <Button bsSize="xs" onClick={this.handleCommentClick}>
+                    <i className="fa fa-comment-o" aria-hidden="true"></i>&nbsp;{post.comments}</Button>
+            )
+
+            var listButton = (
+                <Button onClick={this.handleSave} bsSize="xs">Save</Button>
+            )
+            if (post.imageUrl) {
+                image = <img width={100} height={100} src={post.imageUrl}/>
+            }
+            if (post.status == Constant.STATUS.PENDING) {
+                status = <Label bsStyle="warning">{post.status}</Label>
+            }
+            return (
+                <div className={this.props.postid}>
+                    <Media>
+                        <Media.Left>
+                            {image}
+                        </Media.Left>
+                        <Media.Body>
+                            <Media.Heading>
+                                <Link to={url}>{post.title}</Link>
+                            </Media.Heading>
+                            <p>{description}</p>
+                            <p>{post.author}</p>
+                            {voteButton}
+                            &nbsp;
+                            {commentCount}
+                            &nbsp; {listButton}
+                            &nbsp;
+                            <Button bsSize="xs">
+                                <Link to={post.url} target="_blank">
+                                    <i className="fa fa-external-link" aria-hidden="true"></i>
+                                </Link>
+                            </Button>
+                            &nbsp; {editLink}
+                            &nbsp; {status}
+                        </Media.Body>
+                    </Media>
+                    <hr/>
+                    <PostEdit showModal={this.state.show} post={post} closeModal={this.closeModal}/>
+                    <ListModel showModal={this.state.listShow} post={post} closeListModal={this.closeListModal}/>
+                </div>
+            )
+        } else {
+            return (
+                <div></div>
             )
         }
-
-        var listButton = (
-              <Button onClick={this.handleSave} bsSize="xs">Save</Button>
-          )
-        if (this.props.post.imageUrl) {
-            image = <img width={100} height={100} src={this.props.post.imageUrl}/>
-        }
-        if (this.props.post.status == Constant.STATUS.PENDING) {
-            status = <Label bsStyle="warning">{this.props.post.status}</Label>
-        }
-
-        return (
-            <div>
-                <Media>
-                    <Media.Left>
-                        {image}
-                    </Media.Left>
-                    <Media.Body>
-                        <Media.Heading>
-                            <Link to={url}>{this.props.post.title}</Link>
-                        </Media.Heading>
-                        <p>{description}</p>
-                        <p>{this.props.post.author}</p>
-                        <Button bsSize="xs" onClick={this.handleVote}>
-                            <i className="fa fa-arrow-up" aria-hidden="true"></i>&nbsp;{this.props.post.votes}</Button>
-                        &nbsp;
-                        <Button bsSize="xs">
-                            <i className="fa fa-comment-o" aria-hidden="true"></i>&nbsp;45</Button>
-                        &nbsp; {editLink}
-                        &nbsp; {listButton}
-                        &nbsp; {status}
-                    </Media.Body>
-                </Media>
-                <hr/>
-                <PostEdit showModal={this.state.show} post={this.props.post} closeModal={this.closeModal}/>
-                <ListModel showModal={this.state.listShow} post={this.props.post} closeListModal={this.closeListModal} />
-            </div>
-        )
     }
 }
 
@@ -112,7 +154,6 @@ PostItem.propTypes = {
 };
 
 function mapStateToProps(state) {
-    Meteor.subscribe('votes');
     return {categories: state.categoryReducer.category_getAll}
 }
 

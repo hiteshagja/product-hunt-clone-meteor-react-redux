@@ -3,7 +3,7 @@ import {connect} from 'react-redux';
 import {ActionCreators} from '../../actions';
 import {bindActionCreators} from 'redux';
 import {Grid, Well, Row, Col} from 'react-bootstrap';
-
+import ImageGallery from 'react-image-gallery';
 import PostItem from './postItem';
 import CommentListing from '../comments/commentListing';
 import CommentAdd from '../comments/commentAdd';
@@ -18,7 +18,20 @@ class PostDetails extends Component {
       this.props.getPostComments(this.props.params.id);
     }
 
+
+
     render() {
+      let images = [
+
+   ]
+      var imagelength = this.props.post.postImagesUrl;
+
+      if(this.props.post.postImagesUrl){
+        for (var i = 0; i < imagelength.length; i++) {
+           images.push({original:this.props.post.postImagesUrl[i],thumbnail:this.props.post.postImagesUrl[i]})
+        }
+      }
+
         let commentList,
             newComment;
         if (Object.keys(this.props.post).length > 0) {
@@ -31,8 +44,19 @@ class PostDetails extends Component {
                 <Row>
                     <Col md={12}>
                         <Well className="single-post-detail">
+
                             <PostItem post={this.props.post}/>
                             <p>{this.props.post.body}</p>
+                            <div className="Images text-center">
+                              <div style={{width:600}}>
+                                <ImageGallery
+                                   items={images}
+                                   slideInterval={2000}
+                                   showFullscreenButton={false}
+                                   showPlayButton={false}
+                                   />
+                                </div>
+                              </div>
                         </Well>
                     </Col>
                 </Row>

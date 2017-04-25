@@ -12,24 +12,22 @@ export function togglePostModal(value) {
   }
 }
 
-export function addPost(data) {
+export function addPost(data, cb) {
   return (dispatch, getState) => {
     Meteor.call('insertPost', data, function(err, res) {
       dispatch({
-        type: types.POSTS_ADD,
-        postId: res
+        type: types.POSTS_GET_ALL,
+        posts: res
       })
+      cb(err, res)
     })
   }
 }
 
-export function editPost(data) {
+export function editPost(data, cb) {
   return (dispatch, getState) => {
     Meteor.call('updatePost', data, function(err, res) {
-      dispatch({
-        type: types.POSTS_UPDATE,
-        post_update: res
-      })
+      cb(err, res)
     })
   }
 }
@@ -45,13 +43,45 @@ export function getPost(postId) {
   }
 }
 
-export function getAllPost() {
+export function getAllPost(data) {
   return (dispatch, getState) => {
-    Meteor.call('getAllPost', function(err, res) {
+    Meteor.call('getAllPost',data,function(err, res) {
       dispatch({
         type: types.POSTS_GET_ALL,
-        posts: res
+        posts: res,
+        actionType: data.action
+      })
+      setTimeout(function () {
+        dispatch({
+          type: types.POST_LOADING,
+          text: 'Load more'
+        })
+      }, 100);
+    })
+  }
+}
+
+export function getUserPost(slug) {
+  return (dispatch, getState) => {
+    Meteor.call('getUserPost',slug,function(err, res) {
+      dispatch({
+        type: types.POSTS_GET_USER,
+        user_post: res
       })
     })
   }
+}
+
+export function postLoading(text) {
+  return {
+    type:types.POST_LOADING,
+    text: text
+  };
+}
+
+export function PostPagingDetail(data) {
+  return {
+    type:types.POST_PAGING_DETAIL,
+    data: data
+  };
 }

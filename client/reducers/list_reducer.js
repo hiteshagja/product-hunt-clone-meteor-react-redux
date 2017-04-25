@@ -3,7 +3,7 @@ import * as types from '../actions/types'
 
 let initialPostReducer = {
   list_data:[],
-  data:[],
+  data: {},
   categoryName:''
 }
 

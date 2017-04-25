@@ -14,10 +14,9 @@ class collectionList extends Component {
 
     }
     componentWillMount(){
-      this.props.getList(Meteor.userId());
+      this.props.getList(Meteor.user().slug);
     }
     handleClick(data){
-      console.log(name);
       browserHistory.push('/@'+name+'/collection/'+data.slug);
     }
     render() {

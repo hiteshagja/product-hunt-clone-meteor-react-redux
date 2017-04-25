@@ -1,144 +1,141 @@
 import React, {PropTypes, Component} from 'react';
-import {NavItem} from 'react-bootstrap';
 import {connect} from 'react-redux'
 import {ActionCreators} from '../../actions'
 import {bindActionCreators} from 'redux'
 import ReactDOM from 'react-dom';
-
+import CollectionForm from './collectionForm';
 
 import {
+    Row,
+    Col,
+    Well,
     Button,
     Modal,
     Form,
     FormControl,
     FormGroup,
-    Col,
+    ListGroup,
+    ListGroupItem,
     ControlLabel
 } from 'react-bootstrap';
 
+class CustomButton extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            select: props.data.postId.indexOf(props.post._id) > -1
+                ? true
+                : false
+        };
+        this.listSelect = this.listSelect.bind(this);
+    }
 
-class CustomButton extends Component{
-  constructor(){
-    super();
-    this.listSelect = this.listSelect.bind(this);
-  }
+    listSelect(e) {
+        e.preventDefault();
+        self = this;
+        if (this.state.select) {
+          bertSuccess(Constant.MESSAGES.COLLECTION.EXIEST);
+        }else{
+          this.props.updateList(this.props.data._id, this.props.post._id, (err, res) => {
+            if (err) {
+                bertError(err.message);
+            } else {
+                bertSuccess(Constant.MESSAGES.COLLECTION.POST_ADDED);
+                if (self.state.select === true) {
+                    self.setState({select: false});
+                } else {
+                    self.setState({select: true});
+                }
+                self.props.closeListModal();
 
-  listSelect(listId,post){
-    this.props.updateList(listId,post._id);
-  }
+                self.props.getList(Meteor.user().slug);
+            }
+        });
+      }
+    }
 
-  render(){
-    return(
-      <Button onClick={()=>{this.listSelect(this.props.data._id,this.props.post)}}>{this.props.data.name}</Button>
-    );
-  }
+    render() {
+        let showSelected;
+        if (this.state.select) {
+            showSelected = <i className="fa fa-check pull-right" aria-hidden="true"></i>
+        }
+        return (
+            <ListGroupItem onClick={this.listSelect}>
+                {this.props.data.name}
+                {showSelected}
+            </ListGroupItem>
+        );
+    }
 }
 
 class ListModel extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            addlist:false,
+            addlist: false
         }
-        this.signInWithFacebook = this.signInWithFacebook.bind(this);
-        this.signInWithTwitter = this.signInWithTwitter.bind(this);
         this.addNewList = this.addNewList.bind(this);
-        this.handleAddNewList = this.handleAddNewList.bind(this);
+        this.closeModal = this.closeModal.bind(this);
     }
 
-    signInWithFacebook(e) {
-        e.preventDefault();
-        this.props.signInWithFacebook();
-        this.props.toggleSignInModal(false);
+    addNewList() {
+        this.setState({addlist: true});
     }
 
-    signInWithTwitter(e) {
-        e.preventDefault();
-        this.props.signInWithTwitter();
-        this.props.toggleSignInModal(false);
-    }
-    addNewList(){
-        this.setState({addlist:true});
-    }
-    handleAddNewList(e){
-      e.preventDefault();
-      listname  = ReactDOM.findDOMNode(this.refs.listname).value;
-      postId = this.props.post._id;
-      this.props.addList(listname,postId);
-      this.props.getList(Meteor.userId());
-      this.setState({addlist:false});
+    closeModal() {
+        this.setState({addlist: false});
+        this.props.closeListModal();
     }
 
     render() {
-      const listData = this.props.listData;
-        const buttonStyles = {
-            maxWidth: 350,
-            margin: '0 auto 15px'
-        };
-        if(Meteor.userId()){
-          if(this.state.addlist){
-            addlist = <Form inline>
-                        <FormGroup controlId="formInlineName">
-                          {' '}
-                          <FormControl ref="listname" type="text" placeholder="new lists name" />
-                        </FormGroup>
-                        {' '}
-                        {' '}
-                        <Button onClick={this.handleAddNewList} type="submit">
-                          Add
-                        </Button>
-                      </Form>;
-          }else{
-          addlist = <Button onClick={this.addNewList} bsStyle="link">Link</Button>
-          }
-          return (
-              <Modal show={this.props.showModal} bsSize="large" aria-labelledby="contained-modal-title-sm" onHide={() => {
-                this.setState({addlist:false});  this.props.closeListModal();
-              }}>
-                  <Modal.Header closeButton>
-                      <Modal.Title id="contained-modal-title-sm">List</Modal.Title>
-                  </Modal.Header>
-                  <Modal.Body>
-                        {addlist}
-                        {listData.map((data, index) => (<CustomButton data={data} key={index} post={this.props.post} updateList={this.props.updateList} />))}
-                  </Modal.Body>
-              </Modal>
-          )
-        }else{
-          return (
-              <Modal show={this.props.showModal} bsSize="small" aria-labelledby="contained-modal-title-sm" onHide={() => {
-                  this.props.closeListModal()
-              }}>
-                  <Modal.Header closeButton>
-                      <Modal.Title id="contained-modal-title-sm">SignIn</Modal.Title>
-                  </Modal.Header>
-                  <Modal.Body>
-                      <div style={buttonStyles}>
-                          <Button bsStyle="primary" bsSize="large" block onClick={this.signInWithFacebook}>Facebook</Button>
-                          <Button bsStyle="info" bsSize="large" block onClick={this.signInWithTwitter}>Twitter</Button>
-                      </div>
-                  </Modal.Body>
-              </Modal>
-          )
+        let addlist,
+            collectionList;
+        const listData = this.props.listData;
+
+        if (listData.length > 0) {
+            collectionList = (listData.map((data, index) => (<CustomButton data={data} key={index} post={this.props.post} updateList={this.props.updateList} getList={this.props.getList} closeListModal={this.props.closeListModal}/>)))
+        } else {
+            collectionList = (
+                <ListGroupItem style={{
+                    color: "#999999"
+                }}>No collectios yet.</ListGroupItem>
+            )
         }
 
+        if (this.state.addlist) {
+            addlist = <CollectionForm post={this.props.post} closeModal={this.closeModal}/>
+        } else {
+            addlist = (
+                <Well>
+                    <Button onClick={this.addNewList} bsStyle="link">Add new collection</Button>
+                </Well>
+            )
+        }
+
+        return (
+            <Modal show={this.props.showModal} bsSize="large" className="collection-modal" onHide={this.closeModal}>
+                <Modal.Header closeButton>
+                    <Modal.Title id="contained-modal-title-sm">Choose collection</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Row>
+                        <Col md={4}>
+                            <ListGroup>
+                                {collectionList}
+                            </ListGroup>
+                        </Col>
+                        <Col md={8}>
+                            {addlist}
+                        </Col>
+                    </Row>
+                </Modal.Body>
+            </Modal>
+        )
     }
 }
 
-ListModel.propTypes = {
-    showSignInModal: PropTypes.bool,
-    facebook: PropTypes.string,
-    twitter: PropTypes.string,
-    listtoggle:PropTypes.bool
-};
-
 function mapStateToProps(state) {
-    return {
-      showSignInModal: state.signInReducer.signIn_toggle,
-      facebook: state.signInWithFacebook,
-      twitter: state.signInWithTwitter,
-      listData:state.listtoggle.list_data
-    }
+    return {listData: state.listtoggle.list_data, role: state.signInReducer.role}
 }
 
 function mapDispatchToProps(dispatch) {

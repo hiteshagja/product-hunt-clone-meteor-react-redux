@@ -4,10 +4,10 @@ import {
 } from 'meteor/meteor';
 
 
-export function addList(listname,postId) {
+export function addList(data, cb) {
   return (dispatch, getState) => {
-    Meteor.call('addnewlist',listname,postId,function(err, res) {
-
+    Meteor.call('addnewlist', data, function(err, res) {
+      cb(err, res)
     })
   }
 }
@@ -15,30 +15,38 @@ export function addList(listname,postId) {
 export function getList(user) {
   return (dispatch, getState) => {
     Meteor.call('getlist',user,function(err, res) {
-      dispatch({
-        type: types.LIST_DATA,
-        list_data: res
-      })
-    })
-  }
-}
-
-export function updateList(listId,postId) {
-  return (dispatch, getState) => {
-    Meteor.call('updateList',listId,postId,function(err, res) {
-      if(res){
+      if(res!=undefined){
         dispatch({
-          type: types.LIST_TOGGLE,
-          isOpen: false
+          type: types.LIST_DATA,
+          list_data: res
+        })
+      }else{
+        dispatch({
+          type: types.LIST_DATA,
+          list_data: []
         })
       }
     })
   }
 }
 
-export function singleListData(listId) {
+export function updateList(listId, postId, cb) {
   return (dispatch, getState) => {
-    Meteor.call('singleListData',listId,function(err, res) {
+    Meteor.call('updateList',listId,postId,function(err, res) {
+      // if(res){
+      //   dispatch({
+      //     type: types.LIST_TOGGLE,
+      //     isOpen: false
+      //   })
+      // }
+      cb(err, res)
+    })
+  }
+}
+
+export function singleListData(collectionSlug) {
+  return (dispatch, getState) => {
+    Meteor.call('singleListData', collectionSlug, function(err, res) {
       dispatch({
         type: types.SINGLE_LIST_DATA,
         data: res
@@ -53,6 +61,25 @@ export function collectionName(categorySulg) {
       dispatch({
         type: types.COLLECTION_NAME,
         categoryName: res
+      })
+    })
+  }
+}
+
+export function updateCollection(data, cb) {
+  return (dispatch, getState) => {
+    Meteor.call('updateCollection', data, function(err, res) {
+      cb(err, res)
+    })
+  }
+}
+
+export function getAdminCollections(data) {
+  return (dispatch, getState) => {
+    Meteor.call('getAdminCollections', function(err, res) {
+      dispatch({
+        type: types.ADMIN_COLLECTION_GET,
+        admin_collections: res
       })
     })
   }

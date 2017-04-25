@@ -26,8 +26,15 @@ class CategoryAdd extends Component {
             parentId: ReactDOM.findDOMNode(this.refs.drpCategory).value,
         }
 
-        this.props.addCategory(objCategoryData);
-        this.props.toggleCategoryModal(false);
+        this.props.addCategory(objCategoryData, (err, res) => {
+          if (err) {
+              bertError(err.message);
+          } else {
+              bertSuccess(Constant.MESSAGES.CATEGORY.ADD)
+              this.props.toggleCategoryModal(false);
+              this.props.getAllCategory();
+          }
+        });
     }
 
     render() {
@@ -84,7 +91,7 @@ class CategoryAdd extends Component {
                             </Col>
                             <Col sm={9}>
                             <FormControl ref="drpCategory" componentClass="select">
-                                <option key={-1}>select category</option>
+                                <option key={-1} value="">select category</option>
                                 {this.props.categories.map((category, index) => (
                                   <option key={index} value={category._id}>{category.name}</option>
                                 ))}
@@ -109,7 +116,6 @@ CategoryAdd.propTypes = {
 
 function mapStateToProps(state) {
     return {
-      postId: state.postReducer.post_add,
       showCategoryModal: state.categoryReducer.category_toggle,
       categories: state.categoryReducer.category_getAll
     }

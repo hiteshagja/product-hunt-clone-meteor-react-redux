@@ -5,37 +5,51 @@ import {bindActionCreators} from 'redux';
 import {Grid, Well, Row, Col, Image} from 'react-bootstrap';
 import PostItem from '../posts/postItem';
 
-
 class collectionPost extends Component {
-    constructor(props) {
-        super(props);
-    }
-    componentWillMount(){
-      var listId = this.props.params;
-      if(listId.collection){
-        this.props.collectionName(listId.collection);
-        this.props.singleListData(listId.collection);
-      }
-    }
-    render() {
-      let Author;
-        if(this.props.data.length>0){
-          Author = this.props.data[0].author;
+    componentWillMount() {
+        if (this.props.params.collection) {
+            this.props.singleListData(this.props.params.collection);
         }
+    }
+
+    render() {
+        let name,
+            author,
+            picture,
+            noData,
+            posts = [],
+            post;
+        if (Object.keys(this.props.data).length > 0) {
+            name = this.props.data.name;
+            author = this.props.data.author;
+            picture = this.props.data.picture;
+            posts = this.props.data.posts;
+        }
+
+        if(posts.length==0||posts[0]==null){
+          noData = <h5>Collection is empty</h5>;
+        }else{
+          post = posts.map((post,index) => (<PostItem post={post} key={index}/>));
+        }
+
+
         return (
             <Grid>
-              <Row>
-                  <Col md={12}>
-                      <Well className="collectionName">
-                          <p>{this.props.categoryName}</p>
-                          <p><Image src="http://www.lovemarks.com/wp-content/uploads/profile-avatars/default-avatar-short-hair-girl.png" width={30} height={30} circle />&nbsp; by -{Author}</p>
-                      </Well>
-                  </Col>
-              </Row>
                 <Row>
                     <Col md={12}>
-                        <Well>
-                            {this.props.data.map((post) => (<PostItem post={post} key={post._id}/>))}
+                        <Well className="collectionName">
+                            <p style={{
+                                fontSize: "24px"
+                            }}>{name}</p>
+                            <p><Image src={picture} width={30} height={30} circle/>&nbsp; by -{author}</p>
+                        </Well>
+                    </Col>
+                </Row>
+                <Row>
+                    <Col md={12}>
+                        <Well className="navbar-default">
+                            {noData}
+                            {post}
                         </Well>
                     </Col>
                 </Row>
@@ -45,10 +59,7 @@ class collectionPost extends Component {
 }
 
 function mapStateToProps(state) {
-    return {
-      data:state.listtoggle.data,
-      categoryName:state.listtoggle.categoryName
-    }
+    return {data: state.listtoggle.data}
 }
 
 function mapDispatchToProps(dispatch) {
